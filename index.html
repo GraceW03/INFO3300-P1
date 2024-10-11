@@ -37,36 +37,53 @@
 
     d3.csv("/data/combined_sdg_data_with_continent_scores.csv", d3.autoType).then((data) => {
 
+
       console.log(data); // it works!
+
 
       // first visualization
       let svg = d3.select('svg#vis1');
       const width = svg.attr('width');
       const height = svg.attr('height');
-      const margin = { top: 10, right: 10, bottom: 50, left: 50 };
+      const margin = { top: 10, right: 110, bottom: 50, left: 50 };
       const chartWidth = width - margin.left - margin.right;
       const chartHeight = height - margin.top - margin.bottom;
+
 
       let annotations = svg.append("g").attr("id", "annotations");
       let chartArea = svg.append("g").attr("id", "points")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
+
       data = data.filter((d) => { return d['country_code'] === 'USA'; });
+
 
       let low = 1000;
       let high = -1000;
 
+
+      // dictionary with the variables we are interested in paying attention to
       const scores = ['sdg_index_score', 'goal_1_score', 'goal_2_score', 'goal_3_score', 'goal_4_score', 'goal_5_score'];
 
+
+      /* iterate through a for each loop so we can find the extent of the y axis.
+      cannot use a normal .extent function because we have multiple variable that we need to look
+      at in order to find the extent.
+      */
       data.forEach(d => {
         scores.forEach(score => {
-          if (d[score] > high) high = d[score];
-          if (d[score] < low) low = d[score];
+          if (d[score] > high)
+            high = d[score];
+          if (d[score] < low)
+            low = d[score];
         });
       });
 
-      const yExtent = [low, high];
-      const yScale = d3.scaleLinear().domain(yExtent).range([chartHeight, 0]);
+
+
+
+      // creating y axis scale and gridlines
+      const yScale = d3.scaleLinear().domain([low, high]).range([chartHeight, 0]);
       let leftAxis = d3.axisLeft(yScale)
       let leftGridlines = d3.axisLeft(yScale)
         .tickSize(-chartWidth - 10)
@@ -74,39 +91,67 @@
       annotations.append("g")
         .attr("class", "y axis")
         .attr("transform", `translate(${margin.left - 10},${margin.top})`)
-        .call(leftAxis);
+        .call(leftAxis)
+        .append("text")
+        .attr("class", "yLabel")
+        .attr("x", -205)
+        .attr("y", -20)
+        .attr("fill", "black")
+        .style("font-size", "18px")
+        .attr("transform", "rotate(-90)")
+        .text("Score");;
       annotations.append("g")
         .attr("class", "y gridlines")
         .attr("transform", `translate(${margin.left - 10},${margin.top})`)
         .call(leftGridlines);
 
+
+      // creating x axis scales and gridllines
       const yearExtent = d3.extent(data, d => d['year']);
       const yearScale = d3.scaleLinear().domain(yearExtent).range([0, chartWidth]);
       let bottomAxis = d3.axisBottom(yearScale).tickFormat(d3.format("d"))
       console.log(yearScale);
       let bottomGridlines = d3.axisBottom(yearScale)
         .tickSize(-chartHeight - 10)
-        .tickFormat("");
+        .tickFormat("")
       annotations.append("g")
         .attr("class", "x axis")
         .attr("transform", `translate(${margin.left},${chartHeight + margin.top + 10})`)
-        .call(bottomAxis);
+        .call(bottomAxis)
+        .append("text")
+        .attr("class", "xLabel")
+        .attr("x", chartWidth / 2 + 10)
+        .attr("y", 30)
+        .attr("fill", "black")
+        .style("font-size", "18px")
+        .text("Year");
       annotations.append("g")
         .attr("class", "x gridlines")
         .attr("transform", `translate(${margin.left},${chartHeight + margin.top + 10})`)
         .call(bottomGridlines);
 
+
+      // creating color scale so we can color each line a different color
       const scoreScale = d3.scaleOrdinal()
         .domain(['sdg_index_score', 'goal_1_score', 'goal_2_score', 'goal_3_score', 'goal_4_score', 'goal_5_score'])
         .range(d3.schemeCategory10);
 
 
+
+
+      /*
+      iterating through all of the variables we are interested in. Then,
+      for each variable, we are plotting the points and making their respective
+      lines. We are also creating labels for each line.
+      */
       scores.forEach(score => {
+
 
         var lineGen = d3.line()
           .x(d => yearScale(d['year']))
           .y(d => yScale(d[score]))
           .curve(d3.curveMonotoneX);
+
 
         chartArea.append("path")
           .datum(data)
@@ -116,15 +161,27 @@
           .attr("stroke-width", 3)
           .attr("d", lineGen);
 
+
         chartArea.selectAll(`circle.${score}`).data(data)
           .join("circle")
           .attr("r", 3)
           .attr("fill", scoreScale(score))
           .attr("cx", d => yearScale(d['year']))
           .attr("cy", d => yScale(d[score]));
+
+
+        // This page taught us how to add labels for each line: https://gist.github.com/d3noob/8603837
+        chartArea.append("text")
+          .attr("transform", `translate(${yearScale(data[data.length - 1]['year']) + 3},${yScale(data[data.length - 1][score])})`)
+          .attr("dy", ".35em")
+          .attr("text-anchor", "start")
+          .style("fill", scoreScale(score))
+          .text(score);
       });
 
+
     });
+
 
     d3.csv("/data/sustainable_development_report_2023.csv").then((data) => {
 
@@ -144,8 +201,8 @@
       const sdgScale = d3.scaleLog().domain(sdgExtent)
         .range([chartHeight, 0]);
 
-      const countries = ["United Kingdom", "United States", "Finland", "Canada", "Mexico", "France", "Germany"]
-      // countries = d3.map(data, d => d.country)
+      // const countries = ["United Kingdom", "United States", "Finland", "Canada", "Mexico", "France", "Germany"]
+      countries = d3.map(data, d => d.country)
       const countryScale = d3.scaleBand().domain(countries).range([0, chartWidth])
         .padding(0.05);
 
