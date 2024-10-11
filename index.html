@@ -16,7 +16,11 @@
 <body>
   <h3>Graph 1: Visualizing Sustainable Development Goals in the United States over Time</h3>
   <!-- for united states each year sgi jndex -->
-  <svg id="vis1" height="500" width="800" style="margin-top:50px"> <!-- change dimensions if needed -->
+  <svg id="vis1" height="500" width="800" style="float: left; margin-top:50px"> <!-- change dimensions if needed -->
+
+  </svg>
+
+  <svg id="legend1" height="500" width="450" style=" margin-top:50px">
 
   </svg>
 
@@ -29,6 +33,10 @@
   <h3>Graph 3: Visualizing Sustainable Development Scores for Different Continents over Time </h3>
   <!-- comparing regions (continents) and SDG -->
   <svg id="vis3" height="500" width="800" style="margin-top:50px"> <!-- change dimensions if needed -->
+
+  </svg>
+
+  <svg id="legend3" height="500" width="450" style=" margin-top:50px">
 
   </svg>
 
@@ -49,6 +57,7 @@
       const chartWidth = width - margin.left - margin.right;
       const chartHeight = height - margin.top - margin.bottom;
 
+      let legend = d3.select("svg#legend1")
 
       let annotations = svg.append("g").attr("id", "annotations");
       let chartArea = svg.append("g").attr("id", "points")
@@ -64,7 +73,7 @@
 
       // dictionary with the variables we are interested in paying attention to
       const scores = ['sdg_index_score', 'goal_1_score', 'goal_2_score', 'goal_3_score', 'goal_4_score', 'goal_5_score'];
-
+      const scoreDesc = ['Overall SDG Score', "No Poverty Goal Score", "Zero Hunger Goal Score", "Wellbeing Goal Score", "Education Goal Score", "Gender Equality Goal Score"]
 
       /* iterate through a for each loop so we can find the extent of the y axis.
       cannot use a normal .extent function because we have multiple variable that we need to look
@@ -144,7 +153,7 @@
       for each variable, we are plotting the points and making their respective
       lines. We are also creating labels for each line.
       */
-      scores.forEach(score => {
+      scores.forEach((score, i) => {
 
 
         var lineGen = d3.line()
@@ -170,13 +179,20 @@
           .attr("cy", d => yScale(d[score]));
 
 
-        // This page taught us how to add labels for each line: https://gist.github.com/d3noob/8603837
-        chartArea.append("text")
-          .attr("transform", `translate(${yearScale(data[data.length - 1]['year']) + 3},${yScale(data[data.length - 1][score])})`)
-          .attr("dy", ".35em")
-          .attr("text-anchor", "start")
+        // referenced https://d3-graph-gallery.com/graph/custom_legend.html
+        legend.append("circle")
+          .attr("cx", 50)
+          .attr("cy", 100 + i * 25) // 100 is where the first dot appears. 25 is the distance between dots
+          .attr("r", 7)
+          .style("fill", function (d) { return scoreScale(score) });
+
+        legend.append("text")
+          .attr("x", 70)
+          .attr("y", 100 + i * 25) // 100 is where the first dot appears. 25 is the distance between dots
           .style("fill", scoreScale(score))
-          .text(score);
+          .text(scoreDesc[i])
+          .attr("text-anchor", "left")
+          .style("alignment-baseline", "middle");
       });
 
 
@@ -202,7 +218,7 @@
         .range([chartHeight, 0]);
 
       // const countries = ["United Kingdom", "United States", "Finland", "Canada", "Mexico", "France", "Germany"]
-      countries = d3.map(data, d => d.country)
+      countries = d3.map(data, d => d.country).slice(1, 20);
       const countryScale = d3.scaleBand().domain(countries).range([0, chartWidth])
         .padding(0.05);
 
@@ -254,6 +270,7 @@
       const chartWidth = width - margins.left - margins.right;
       const chartHeight = height - margins.top - margins.bottom;
 
+      let legend = d3.select("svg#legend3");
 
       let annotations = svg.append("g").attr("id", "annotations");
       let chartArea = svg.append("g").attr("id", "points")
@@ -319,6 +336,30 @@
         .attr("cy", d => yScale(d['continent_avg_score']) + jitter())
         .style("fill", d => countryScale(d['continent']))
         .attr("opacity", 0.6);
+
+      let continents = d3.group(data, d => d.continent);
+
+      // referenced https://d3-graph-gallery.com/graph/custom_legend.html
+      legend.selectAll("dots")
+        .data(continents)
+        .enter()
+        .append("circle")
+        .attr("cx", 100)
+        .attr("cy", (d, i) => { return 100 + i * 25 }) // 100 is where the first dot appears. 25 is the distance between dots
+        .attr("r", 7)
+        .style("fill", (d) => { return countryScale(d[0]) });
+
+      legend.selectAll("labels")
+        .data(continents)
+        .enter()
+        .append("text")
+        .attr("x", 120)
+        .attr("y", (d, i) => { return 100 + i * 25 }) // 100 is where the first dot appears. 25 is the distance between dots
+        .style("fill", (d) => { return countryScale(d[0]) })
+        .text((d) => { return d[0] })
+        .attr("text-anchor", "left")
+        .style("alignment-baseline", "middle");
+
 
     });
 
