@@ -14,31 +14,41 @@
 </head>
 
 <body>
-  <h3>Graph 1: Visualizing Sustainable Development Goals in the United States over Time</h3>
-  <!-- for united states each year sgi jndex -->
-  <svg id="vis1" height="500" width="800" style="float: left; margin-top:50px"> <!-- change dimensions if needed -->
+  <h1>
+    Sustainable Development: How does it compare around the world and over time?
+  </h1>
 
-  </svg>
+  <div>
+    <h3>Graph 1: Visualizing Sustainable Development Goals in the United States over Time</h3>
+    <!-- for united states each year sgi jndex -->
+    <svg id="vis1" height="500" width="800" style="float: left; margin-top:50px"> <!-- change dimensions if needed -->
 
-  <svg id="legend1" height="500" width="450" style=" margin-top:50px">
+    </svg>
 
-  </svg>
+    <svg id="legend1" height="500" width="450" style=" margin-top:50px">
 
-  <h3>Graph 2: Visualizing Sustainable Development Scores for Different Countries in 2023 </h3>
-  <!-- side by side bar graph comparing esch country where x axis is country and y axis is sgi -->
-  <svg id="vis2" height="500" width="800" style="margin-top:50px"> <!-- change dimensions if needed -->
+    </svg>
+  </div>
 
-  </svg>
+  <div>
+    <h3>Graph 2: Visualizing Sustainable Development Scores for Different Countries in 2023 </h3>
+    <!-- side by side bar graph comparing esch country where x axis is country and y axis is sgi -->
+    <svg id="vis2" height="500" width="800" style="margin-top:50px"> <!-- change dimensions if needed -->
 
-  <h3>Graph 3: Visualizing Sustainable Development Scores for Different Continents over Time </h3>
-  <!-- comparing regions (continents) and SDG -->
-  <svg id="vis3" height="500" width="800" style="margin-top:50px"> <!-- change dimensions if needed -->
+    </svg>
+  </div>
 
-  </svg>
+  <div>
+    <h3>Graph 3: Visualizing Sustainable Development Scores for Different Continents over Time </h3>
+    <!-- comparing regions (continents) and SDG -->
+    <svg id="vis3" height="500" width="800" style="margin-top:50px"> <!-- change dimensions if needed -->
 
-  <svg id="legend3" height="500" width="450" style=" margin-top:50px">
+    </svg>
 
-  </svg>
+    <svg id="legend3" height="500" width="450" style=" margin-top:50px">
+
+    </svg>
+  </div>
 
 
   <script>
@@ -108,7 +118,7 @@
         .attr("fill", "black")
         .style("font-size", "18px")
         .attr("transform", "rotate(-90)")
-        .text("Score");;
+        .text("Score (%)");;
       annotations.append("g")
         .attr("class", "y gridlines")
         .attr("transform", `translate(${margin.left - 10},${margin.top})`)
@@ -210,18 +220,23 @@
       const margins = { top: 30, right: 10, bottom: 50, left: 50 };
       const chartWidth = width - margins.left - margins.right;
       const chartHeight = height - margins.top - margins.bottom;
-      let chartArea = svg.append("g").attr("id", "points")
-        .attr("transform", `translate(${margins.left},${margins.top})`);
 
       const sdgExtent = d3.extent(data, d => d['overall_score']);
       const sdgScale = d3.scaleLog().domain(sdgExtent)
         .range([chartHeight, 0]);
 
-      // const countries = ["United Kingdom", "United States", "Finland", "Canada", "Mexico", "France", "Germany"]
-      countries = d3.map(data, d => d.country).slice(1, 20);
+      const countries = ["United Kingdom", "United States", "Finland", "Canada", "Mexico", "France", "Germany", "China"]
+      // countries = d3.map(data, d => d.country).slice(1, 20);
       const countryScale = d3.scaleBand().domain(countries).range([0, chartWidth])
         .padding(0.05);
 
+      const colorScale = d3.scaleOrdinal()
+        .domain(countries)
+        .range(d3.schemeCategory10);
+
+      data = data.filter((d) => { return countries.includes(d.country) });
+
+      let annotations = svg.append("g").attr("id", "annotations");
       // Update and animate axes
       let bottomAxis = d3.axisBottom();
       let bottomAxisG = svg.append("g")
@@ -231,24 +246,44 @@
       bottomAxis.scale(countryScale);
       bottomAxisG.transition().call(bottomAxis);
 
-      let leftAxis = d3.axisLeft(sdgScale);
-      svg.append("g")
-        .attr("class", "y axis")
-        .attr("transform", `translate(${margins.left - 10}, ${margins.top})`)
-        .call(leftAxis);
+      // let leftAxis = d3.axisLeft(sdgScale);
+      // svg.append("g")
+      //   .attr("class", "y axis")
+      //   .attr("transform", `translate(${margins.left - 10}, ${margins.top})`)
+      //   .call(leftAxis);
 
+      // let leftGridlines = d3.axisLeft(sdgScale)
+      //   .tickSize(-chartWidth - 10)
+      //   .tickFormat('');
+      // svg.append('g')
+      //   .attr('class', 'y gridlines')
+      //   .attr('transform', `translate(${margins.left - 10},${margins.top})`)
+      //   .call(leftGridlines);
+
+      let leftAxis = d3.axisLeft(sdgScale)
       let leftGridlines = d3.axisLeft(sdgScale)
         .tickSize(-chartWidth - 10)
-        .tickFormat('');
-      svg.append('g')
-        .attr('class', 'y gridlines')
-        .attr('transform', `translate(${margins.left - 10},${margins.top})`)
-        .call(leftGridlines);
+        .tickFormat("")
+      annotations.append("g")
+        .attr("class", "y axis")
+        .attr("transform", "translate(" + (margins.left - 10) + "," + margins.top + ")")
+        .call(leftAxis)
+        .append("text")
+        .attr("class", "yLabel")
+        .attr("x", -205)
+        .attr("y", -20)
+        .attr("fill", "black")
+        .attr("transform", "rotate(-90)")
+        .text("Overall SDG score (%)");
+
+
+      let chartArea = svg.append("g").attr("id", "points")
+        .attr("transform", `translate(${margins.left},${margins.top})`);
 
       chartArea.selectAll('rect.bar').data(data, d => d['country'])
         .join(enter => enter.append('rect')
           .attr('class', 'bar')
-          .attr("fill", "steelblue")
+          .attr("fill", d => 'green') // colorScale(d.country)
           .attr("x", d => countryScale(d.country))
           .attr("y", d => sdgScale(d.overall_score))
           .attr("height", d => sdgScale(sdgExtent[0]) - sdgScale(d.overall_score))
@@ -318,7 +353,7 @@
         .attr("y", -20)
         .attr("fill", "black")
         .attr("transform", "rotate(-90)")
-        .text("Overall SDG score");
+        .text("Overall SDG score (%)");
 
       annotations.append("g")
         .attr("class", "y gridlines")
