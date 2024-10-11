@@ -2,6 +2,7 @@
 
 <head>
   <script src="https://d3js.org/d3.v7.min.js"></script>
+
   <style>
     .gridlines .domain {
       display: none;
@@ -10,42 +11,60 @@
     .gridlines line {
       stroke: #aaa;
     }
+
+    #title {
+      background-color: palegreen;
+      padding: 10px;
+      text-align: center;
+      font-family: 'Franklin Gothic Medium';
+    }
+
+    #vis {
+      margin-top: 3rem;
+      margin-left: 2rem;
+    }
+
+    /* #vis h3 {
+      padding: 
+    } */
   </style>
 </head>
 
 <body>
-  <h1>
-    Sustainable Development: How does it compare around the world and over time?
-  </h1>
+  <div id="title">
+    <h1>
+      Sustainable Development: How does it compare around the world and over time?
+    </h1>
+  </div>
 
-  <div>
+  <div id="vis">
     <h3>Graph 1: Visualizing Sustainable Development Goals in the United States over Time</h3>
     <!-- for united states each year sgi jndex -->
-    <svg id="vis1" height="500" width="800" style="float: left; margin-top:50px"> <!-- change dimensions if needed -->
+    <svg id="vis1" height="500" width="800" style="float: left"> <!-- change dimensions if needed -->
 
     </svg>
 
-    <svg id="legend1" height="500" width="450" style=" margin-top:50px">
+    <svg id="legend1" height="500" width="270">
 
     </svg>
   </div>
 
-  <div>
+  <div id="vis">
     <h3>Graph 2: Visualizing Sustainable Development Scores for Different Countries in 2023 </h3>
     <!-- side by side bar graph comparing esch country where x axis is country and y axis is sgi -->
-    <svg id="vis2" height="500" width="800" style="margin-top:50px"> <!-- change dimensions if needed -->
+    <svg id="vis2" height="800" width="1000"> <!-- change dimensions if needed -->
 
     </svg>
   </div>
 
-  <div>
+  <div id="vis">
     <h3>Graph 3: Visualizing Sustainable Development Scores for Different Continents over Time </h3>
     <!-- comparing regions (continents) and SDG -->
-    <svg id="vis3" height="500" width="800" style="margin-top:50px"> <!-- change dimensions if needed -->
+    <svg id="vis3" height="600" width="800"> <!-- change dimensions if needed -->
 
     </svg>
 
-    <svg id="legend3" height="500" width="450" style=" margin-top:50px">
+    <svg id="legend3" height="500" width="450">
 
     </svg>
   </div>
@@ -63,7 +82,7 @@
       let svg = d3.select('svg#vis1');
       const width = svg.attr('width');
       const height = svg.attr('height');
-      const margin = { top: 10, right: 110, bottom: 50, left: 50 };
+      const margin = { top: 10, right: 10, bottom: 50, left: 70 };
       const chartWidth = width - margin.left - margin.right;
       const chartHeight = height - margin.top - margin.bottom;
 
@@ -113,19 +132,19 @@
         .call(leftAxis)
         .append("text")
         .attr("class", "yLabel")
-        .attr("x", -205)
-        .attr("y", -20)
+        .attr("x", -195)
+        .attr("y", -30)
         .attr("fill", "black")
         .style("font-size", "18px")
         .attr("transform", "rotate(-90)")
-        .text("Score (%)");;
+        .text("Score (%)");
       annotations.append("g")
         .attr("class", "y gridlines")
         .attr("transform", `translate(${margin.left - 10},${margin.top})`)
         .call(leftGridlines);
 
 
-      // creating x axis scales and gridllines
+      // creating x axis scales and gridlines
       const yearExtent = d3.extent(data, d => d['year']);
       const yearScale = d3.scaleLinear().domain(yearExtent).range([0, chartWidth]);
       let bottomAxis = d3.axisBottom(yearScale).tickFormat(d3.format("d"))
@@ -140,7 +159,7 @@
         .append("text")
         .attr("class", "xLabel")
         .attr("x", chartWidth / 2 + 10)
-        .attr("y", 30)
+        .attr("y", 35)
         .attr("fill", "black")
         .style("font-size", "18px")
         .text("Year");
@@ -213,55 +232,42 @@
 
       console.log(data);
 
+      data = data.filter((d) => { return d.region === 'OECD' });
+
       // second visualization
       let svg = d3.select('svg#vis2');
       const width = svg.attr('width');
       const height = svg.attr('height');
-      const margins = { top: 30, right: 10, bottom: 50, left: 50 };
+      const margins = { top: 30, right: 10, bottom: 100, left: 150 };
       const chartWidth = width - margins.left - margins.right;
       const chartHeight = height - margins.top - margins.bottom;
 
+      // x
       const sdgExtent = d3.extent(data, d => d['overall_score']);
-      const sdgScale = d3.scaleLog().domain(sdgExtent)
-        .range([chartHeight, 0]);
+      const sdgScale = d3.scaleLinear().domain(sdgExtent)
+        .range([0, chartWidth]);
 
-      const countries = ["United Kingdom", "United States", "Finland", "Canada", "Mexico", "France", "Germany", "China"]
-      // countries = d3.map(data, d => d.country).slice(1, 20);
-      const countryScale = d3.scaleBand().domain(countries).range([0, chartWidth])
-        .padding(0.05);
+      // y
+      countries = d3.map(data, d => d.country);
+      const countryScale = d3.scaleBand().domain(countries).range([0, chartHeight])
+        .padding(0.3);
 
-      const colorScale = d3.scaleOrdinal()
-        .domain(countries)
-        .range(d3.schemeCategory10);
-
-      data = data.filter((d) => { return countries.includes(d.country) });
 
       let annotations = svg.append("g").attr("id", "annotations");
-      // Update and animate axes
+
+      // x axis and gridlines
       let bottomAxis = d3.axisBottom();
+      bottomAxis.scale(sdgScale);
+
       let bottomAxisG = svg.append("g")
         .attr("class", "x axis")
-        .attr("transform", `translate(${margins.left},${chartHeight + margins.top + 10})`)
+        .attr("transform", `translate(${margins.left},${chartHeight + margins.top + 10})`);
 
-      bottomAxis.scale(countryScale);
-      bottomAxisG.transition().call(bottomAxis);
+      bottomAxisG.call(bottomAxis);
 
-      // let leftAxis = d3.axisLeft(sdgScale);
-      // svg.append("g")
-      //   .attr("class", "y axis")
-      //   .attr("transform", `translate(${margins.left - 10}, ${margins.top})`)
-      //   .call(leftAxis);
-
-      // let leftGridlines = d3.axisLeft(sdgScale)
-      //   .tickSize(-chartWidth - 10)
-      //   .tickFormat('');
-      // svg.append('g')
-      //   .attr('class', 'y gridlines')
-      //   .attr('transform', `translate(${margins.left - 10},${margins.top})`)
-      //   .call(leftGridlines);
-
-      let leftAxis = d3.axisLeft(sdgScale)
-      let leftGridlines = d3.axisLeft(sdgScale)
+      // y axis and gridlines
+      let leftAxis = d3.axisLeft(countryScale)
+      let leftGridlines = d3.axisLeft(countryScale)
         .tickSize(-chartWidth - 10)
         .tickFormat("")
       annotations.append("g")
@@ -270,11 +276,12 @@
         .call(leftAxis)
         .append("text")
         .attr("class", "yLabel")
-        .attr("x", -205)
-        .attr("y", -20)
+        .attr("x", -195)
+        .attr("y", -100)
         .attr("fill", "black")
+        .style("font-size", "18px")
         .attr("transform", "rotate(-90)")
-        .text("Overall SDG score (%)");
+        .text("Country");
 
 
       let chartArea = svg.append("g").attr("id", "points")
@@ -283,12 +290,11 @@
       chartArea.selectAll('rect.bar').data(data, d => d['country'])
         .join(enter => enter.append('rect')
           .attr('class', 'bar')
-          .attr("fill", d => 'green') // colorScale(d.country)
-          .attr("x", d => countryScale(d.country))
-          .attr("y", d => sdgScale(d.overall_score))
-          .attr("height", d => sdgScale(sdgExtent[0]) - sdgScale(d.overall_score))
-          .attr("width", countryScale.bandwidth()));
-
+          .attr("fill", d => { return (d.country === 'United States') ? 'red' : 'steelblue' })
+          .attr("y", d => countryScale(d.country))
+          .attr("x", d => sdgScale(sdgExtent[0]))
+          .attr("width", d => sdgScale(d.overall_score))
+          .attr("height", countryScale.bandwidth()));
 
 
     });
@@ -319,7 +325,7 @@
 
       const countryScale = d3.scaleOrdinal(d3.schemeCategory10);
 
-      let bottomAxis = d3.axisBottom(xScale)
+      let bottomAxis = d3.axisBottom(xScale).tickFormat(d3.format("d"));
       let bottomGridlines = d3.axisBottom(xScale)
         .tickSize(-chartHeight - 10)
         .tickFormat("")
@@ -367,8 +373,8 @@
       let circles = chartArea.selectAll("circle").data(data)
         .join("circle")
         .attr("r", 4)
-        .attr("cx", d => xScale(d['year']) + jitter())
-        .attr("cy", d => yScale(d['continent_avg_score']) + jitter())
+        .attr("cx", d => xScale(d['year']))
+        .attr("cy", d => yScale(d['continent_avg_score']))
         .style("fill", d => countryScale(d['continent']))
         .attr("opacity", 0.6);
 
