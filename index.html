@@ -14,17 +14,19 @@
 </head>
 
 <body>
+  <h3>Graph 1: Visualizing Sustainable Development Goals in the United States over Time</h3>
   <!-- for united states each year sgi jndex -->
   <svg id="vis1" height="500" width="800" style="margin-top:50px"> <!-- change dimensions if needed -->
 
   </svg>
 
+  <h3>Graph 2: Visualizing Sustainable Development Scores for Different Countries in 2023 </h3>
   <!-- side by side bar graph comparing esch country where x axis is country and y axis is sgi -->
   <svg id="vis2" height="500" width="800" style="margin-top:50px"> <!-- change dimensions if needed -->
 
   </svg>
 
-
+  <h3>Graph 3: Visualizing Sustainable Development Scores for Different Continents over Time </h3>
   <!-- comparing regions (continents) and SDG -->
   <svg id="vis3" height="500" width="800" style="margin-top:50px"> <!-- change dimensions if needed -->
 
@@ -80,11 +82,11 @@
 
       const yearExtent = d3.extent(data, d => d['year']);
       const yearScale = d3.scaleLinear().domain(yearExtent).range([0, chartWidth]);
-      let bottomAxis = d3.axisBottom(yearScale)
+      let bottomAxis = d3.axisBottom(yearScale).tickFormat(d3.format("d"))
       console.log(yearScale);
       let bottomGridlines = d3.axisBottom(yearScale)
         .tickSize(-chartHeight - 10)
-        .tickFormat("")
+        .tickFormat("");
       annotations.append("g")
         .attr("class", "x axis")
         .attr("transform", `translate(${margin.left},${chartHeight + margin.top + 10})`)
@@ -110,14 +112,14 @@
           .datum(data)
           .attr("class", "line")
           .attr("fill", "none")
-          .attr("stroke", scoreScale[score])
+          .attr("stroke", scoreScale(score))
           .attr("stroke-width", 3)
           .attr("d", lineGen);
 
         chartArea.selectAll(`circle.${score}`).data(data)
           .join("circle")
           .attr("r", 3)
-          .attr("fill", scoreScale[score])
+          .attr("fill", scoreScale(score))
           .attr("cx", d => yearScale(d['year']))
           .attr("cy", d => yScale(d[score]));
       });
@@ -135,25 +137,32 @@
       const margins = { top: 30, right: 10, bottom: 50, left: 50 };
       const chartWidth = width - margins.left - margins.right;
       const chartHeight = height - margins.top - margins.bottom;
+      let chartArea = svg.append("g").attr("id", "points")
+        .attr("transform", `translate(${margins.left},${margins.top})`);
 
       const sdgExtent = d3.extent(data, d => d['overall_score']);
       const sdgScale = d3.scaleLog().domain(sdgExtent)
-        .range([0, chartWidth]);
+        .range([chartHeight, 0]);
 
-      const countries = d3.map(data, d => d.country)
+      const countries = ["United Kingdom", "United States", "Finland", "Canada", "Mexico", "France", "Germany"]
+      // countries = d3.map(data, d => d.country)
       const countryScale = d3.scaleBand().domain(countries).range([0, chartWidth])
         .padding(0.05);
 
       // Update and animate axes
       let bottomAxis = d3.axisBottom();
+      let bottomAxisG = svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", `translate(${margins.left},${chartHeight + margins.top + 10})`)
+
       bottomAxis.scale(countryScale);
       bottomAxisG.transition().call(bottomAxis);
 
       let leftAxis = d3.axisLeft(sdgScale);
-      svg2.append("g")
+      svg.append("g")
         .attr("class", "y axis")
         .attr("transform", `translate(${margins.left - 10}, ${margins.top})`)
-        .call(leftAxis2);
+        .call(leftAxis);
 
       let leftGridlines = d3.axisLeft(sdgScale)
         .tickSize(-chartWidth - 10)
@@ -163,7 +172,14 @@
         .attr('transform', `translate(${margins.left - 10},${margins.top})`)
         .call(leftGridlines);
 
-
+      chartArea.selectAll('rect.bar').data(data, d => d['country'])
+        .join(enter => enter.append('rect')
+          .attr('class', 'bar')
+          .attr("fill", "steelblue")
+          .attr("x", d => countryScale(d.country))
+          .attr("y", d => sdgScale(d.overall_score))
+          .attr("height", d => sdgScale(sdgExtent[0]) - sdgScale(d.overall_score))
+          .attr("width", countryScale.bandwidth()));
 
 
 
