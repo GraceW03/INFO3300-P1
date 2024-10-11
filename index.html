@@ -114,7 +114,7 @@
           .attr("stroke-width", 3)
           .attr("d", lineGen);
 
-        chartArea.selectAll(`circle.${variable}`).data(data)
+        chartArea.selectAll(`circle.${score}`).data(data)
           .join("circle")
           .attr("r", 3)
           .attr("fill", scoreScale[score])
@@ -145,8 +145,8 @@
         .padding(0.05);
 
       // Update and animate axes
-      let bottomAxis = d3.axisBottom()
-      bottomAxis.scale(countryScale)
+      let bottomAxis = d3.axisBottom();
+      bottomAxis.scale(countryScale);
       bottomAxisG.transition().call(bottomAxis);
 
       let leftAxis = d3.axisLeft(sdgScale);
@@ -243,7 +243,7 @@
         .join("circle")
         .attr("r", 4)
         .attr("cx", d => xScale(d['year']) + jitter())
-        .attr("cy", d => yScale(d['points']) + jitter())
+        .attr("cy", d => yScale(d['continent_avg_score']) + jitter())
         .style("fill", d => countryScale(d['continent']))
         .attr("opacity", 0.6);
 
