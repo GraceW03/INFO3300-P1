@@ -52,7 +52,7 @@
   <div id="vis">
     <h3>Graph 2: Visualizing Sustainable Development Scores for Different Countries in 2023 </h3>
     <!-- side by side bar graph comparing esch country where x axis is country and y axis is sgi -->
-    <svg id="vis2" height="800" width="1000"> <!-- change dimensions if needed -->
+    <svg id="vis2" height="930" width="1000"> <!-- change dimensions if needed -->
 
     </svg>
   </div>
@@ -60,7 +60,7 @@
   <div id="vis">
     <h3>Graph 3: Visualizing Sustainable Development Scores for Different Continents over Time </h3>
     <!-- comparing regions (continents) and SDG -->
-    <svg id="vis3" height="600" width="800"> <!-- change dimensions if needed -->
+    <svg id="vis3" height="600" width="850"> <!-- change dimensions if needed -->
 
     </svg>
 
@@ -230,21 +230,19 @@
 
     d3.csv("/data/sustainable_development_report_2023.csv").then((data) => {
 
-      console.log(data);
-
       data = data.filter((d) => { return d.region === 'OECD' });
 
       // second visualization
       let svg = d3.select('svg#vis2');
       const width = svg.attr('width');
       const height = svg.attr('height');
-      const margins = { top: 30, right: 10, bottom: 100, left: 150 };
+      const margins = { top: 30, right: 10, bottom: 130, left: 150 };
       const chartWidth = width - margins.left - margins.right;
       const chartHeight = height - margins.top - margins.bottom;
 
       // x
       const sdgExtent = d3.extent(data, d => d['overall_score']);
-      const sdgScale = d3.scaleLinear().domain(sdgExtent)
+      const sdgScale = d3.scaleLinear().domain([sdgExtent[0] - 1, sdgExtent[1]])
         .range([0, chartWidth]);
 
       // y
@@ -263,6 +261,11 @@
         .attr("class", "x axis")
         .attr("transform", `translate(${margins.left},${chartHeight + margins.top + 10})`);
 
+      svg.append("text")
+        .attr("x", chartWidth / 2 + 10)
+        .attr("y", 1000)
+        .attr("fill", "black")
+        .style("font-size", "18px")
       bottomAxisG.call(bottomAxis);
 
       // y axis and gridlines
@@ -276,7 +279,7 @@
         .call(leftAxis)
         .append("text")
         .attr("class", "yLabel")
-        .attr("x", -195)
+        .attr("x", -300)
         .attr("y", -100)
         .attr("fill", "black")
         .style("font-size", "18px")
@@ -292,7 +295,7 @@
           .attr('class', 'bar')
           .attr("fill", d => { return (d.country === 'United States') ? 'red' : 'steelblue' })
           .attr("y", d => countryScale(d.country))
-          .attr("x", d => sdgScale(sdgExtent[0]))
+          .attr("x", d => sdgScale(sdgExtent[0] - 1))
           .attr("width", d => sdgScale(d.overall_score))
           .attr("height", countryScale.bandwidth()));
 
@@ -307,7 +310,7 @@
       let svg = d3.select('svg#vis3');
       const width = svg.attr('width');
       const height = svg.attr('height');
-      const margins = { top: 30, right: 10, bottom: 50, left: 50 };
+      const margins = { top: 30, right: 30, bottom: 100, left: 80 };
       const chartWidth = width - margins.left - margins.right;
       const chartHeight = height - margins.top - margins.bottom;
 
@@ -336,8 +339,9 @@
         .append("text")
         .attr("class", "xLabel")
         .attr("x", chartWidth / 2 + 10)
-        .attr("y", 30)
+        .attr("y", 45)
         .attr("fill", "black")
+        .style("font-size", "18px")
         .text("Year");
 
       annotations.append("g")
@@ -355,9 +359,10 @@
         .call(leftAxis)
         .append("text")
         .attr("class", "yLabel")
-        .attr("x", -205)
-        .attr("y", -20)
+        .attr("x", -200)
+        .attr("y", -50)
         .attr("fill", "black")
+        .style("font-size", "18px")
         .attr("transform", "rotate(-90)")
         .text("Overall SDG score (%)");
 
