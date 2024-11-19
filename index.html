@@ -1,34 +1,12 @@
 <html>
+<!-- Source of data: https://www.kaggle.com/datasets/sazidthe1/sustainable-development-report -->
 
 <head>
   <script src="https://d3js.org/d3.v7.min.js"></script>
-
-  <style>
-    .gridlines .domain {
-      display: none;
-    }
-
-    .gridlines line {
-      stroke: #aaa;
-    }
-
-    #title {
-      background-color: palegreen;
-      padding: 10px;
-      text-align: center;
-      font-family: 'Franklin Gothic Medium';
-    }
-
-    #vis {
-      margin-top: 3rem;
-      margin-left: 2rem;
-    }
-
-    /* #vis h3 {
-      padding: 
-    } */
-  </style>
+  <link rel="stylesheet" href="styles/style.css">
 </head>
+
+<!-- Below we are describing what our data looks like and narrating a visual story of our report -->
 
 <body>
   <div id="title">
@@ -37,52 +15,83 @@
     </h1>
   </div>
 
-  <div id="vis">
-    <h3>Graph 1: Visualizing Sustainable Development Goals in the United States over Time</h3>
-    <!-- for united states each year sgi jndex -->
-    <svg id="vis1" height="500" width="800" style="float: left"> <!-- change dimensions if needed -->
+  <div id="content">
+    <p>
+      Sustainable development is the practice of advancing our society sustainably, in regards to the environment,
+      economics, social growth, and more.
+      Sustainable Development Goals (SDGs) are a set of 17 global objectives created by the United Nations in 2015
+      to address the world's environmental, social, and economic challenges by 2030. Each SDG is scored on a percentage
+      basis to measure progress and accountability, and represents how close a country is to performing at the level
+      expected by the goal. </p>
 
-    </svg>
 
-    <svg id="legend1" height="500" width="270">
+    <div id="vis">
+      <h3>Graph 1: Visualizing Sustainable Development Goals in the United States over Time</h3>
+      <p>This chart shows the United States' performance in five metrics: poverty, hunger, wellbeing, gender equality,
+        and
+        education from the years 2000-2022. We also plot the US's overall SDG score for these years. We can see that the
+        United States has had a relatively low zero hunger goal score over the years which is a good sign. Over the
+        years, the gender equality score and the overall SDG score has increased but it is still relatively low. The
+        well being goal score has also generally increased and it is relatively high compared to the other scores. The
+        education score in the United States has generally been very high with a dip in 2013. The no poverty goal score
+        is very high and has continuously remained very high over the past 22 years.</p>
 
-    </svg>
+      <!-- for united states each year sgi jndex -->
+      <svg id="vis1" height="550" width="800" style="float: left"> <!-- change dimensions if needed -->
+
+      </svg>
+
+      <svg id="legend1" height="500" width="270">
+
+      </svg>
+    </div>
+
+    <br>
+
+    <div id="vis">
+      <h3>Graph 2: Visualizing Current Performance of Countries in the OECD </h3>
+      <p>This graph shows overall sustainable development Scores for countries in the Organisation for Economic
+        Cooperation
+        and Development (OECD) in the year 2023. The United States is highlighted in red. Out of the 38 countries in the
+        OECD, the United States has the 7th lowest overall SDG score. Top performing countries in the OECD include
+        Finland, Sweden, Denmark, and Germany. Lowest performing countries include Costa Rica, Turkiye, Colombia, and
+        Mexico.</p>
+      <!-- side by side bar graph comparing esch country where x axis is country and y axis is sgi -->
+      <svg id="vis2" height="900" width="1000">
+
+      </svg>
+    </div>
+
+    <div id="vis">
+      <h3>Graph 3: Visualizing Sustainable Development Scores for Different Continents over Time </h3>
+      <p>We wanted to see if European countries really stand out in terms of meeting the SDG goals by showcasing a
+        holistic view of all the countries in comparison. By plotting all the continents, Europe, Asia, North America,
+        South America, Oceania, and Africa and their SDG score for each year, we were able to visualize which region of
+        the world is performing well or not. We uncovered a 70% benchmark line through our research about how if a
+        country scores above 70 points they are doing well. From what we can see in this chart. Europe is the only
+        continent that has consistently scored above 70, which was not surprising and was in harmony with our earlier
+        results. </p>
+      <!-- comparing regions (continents) and SDG -->
+      <svg id="vis3" height="600" width="850">
+
+      </svg>
+
+      <svg id="legend3" height="500" width="350">
+
+      </svg>
+    </div>
   </div>
 
-  <div id="vis">
-    <h3>Graph 2: Visualizing Sustainable Development Scores for Different Countries in 2023 </h3>
-    <!-- side by side bar graph comparing esch country where x axis is country and y axis is sgi -->
-    <svg id="vis2" height="800" width="1000"> <!-- change dimensions if needed -->
-
-    </svg>
-  </div>
-
-  <div id="vis">
-    <h3>Graph 3: Visualizing Sustainable Development Scores for Different Continents over Time </h3>
-    <!-- comparing regions (continents) and SDG -->
-    <svg id="vis3" height="600" width="800"> <!-- change dimensions if needed -->
-
-    </svg>
-
-    <svg id="legend3" height="500" width="450">
-
-    </svg>
-  </div>
-
-
+  <!-- Script for filling in our svg elements -->
   <script>
 
+    // First visualization
     d3.csv("/data/combined_sdg_data_with_continent_scores.csv", d3.autoType).then((data) => {
-
-
-      console.log(data); // it works!
-
-
-      // first visualization
+      // Defining all the margins and constants for our chart
       let svg = d3.select('svg#vis1');
       const width = svg.attr('width');
       const height = svg.attr('height');
-      const margin = { top: 10, right: 10, bottom: 50, left: 70 };
+      const margin = { top: 10, right: 10, bottom: 80, left: 70 };
       const chartWidth = width - margin.left - margin.right;
       const chartHeight = height - margin.top - margin.bottom;
 
@@ -116,8 +125,6 @@
             low = d[score];
         });
       });
-
-
 
 
       // creating y axis scale and gridlines
@@ -159,7 +166,7 @@
         .append("text")
         .attr("class", "xLabel")
         .attr("x", chartWidth / 2 + 10)
-        .attr("y", 35)
+        .attr("y", 50)
         .attr("fill", "black")
         .style("font-size", "18px")
         .text("Year");
@@ -173,8 +180,6 @@
       const scoreScale = d3.scaleOrdinal()
         .domain(['sdg_index_score', 'goal_1_score', 'goal_2_score', 'goal_3_score', 'goal_4_score', 'goal_5_score'])
         .range(d3.schemeCategory10);
-
-
 
 
       /*
@@ -208,7 +213,7 @@
           .attr("cy", d => yScale(d[score]));
 
 
-        // referenced https://d3-graph-gallery.com/graph/custom_legend.html
+        // referenced https://d3-graph-gallery.com/graph/custom_legend.html for legend
         legend.append("circle")
           .attr("cx", 50)
           .attr("cy", 100 + i * 25) // 100 is where the first dot appears. 25 is the distance between dots
@@ -230,11 +235,10 @@
 
     d3.csv("/data/sustainable_development_report_2023.csv").then((data) => {
 
-      console.log(data);
-
       data = data.filter((d) => { return d.region === 'OECD' });
 
       // second visualization
+      // Defining all the margins and constants for our chart
       let svg = d3.select('svg#vis2');
       const width = svg.attr('width');
       const height = svg.attr('height');
@@ -242,12 +246,12 @@
       const chartWidth = width - margins.left - margins.right;
       const chartHeight = height - margins.top - margins.bottom;
 
-      // x
+      // x scale
       const sdgExtent = d3.extent(data, d => d['overall_score']);
-      const sdgScale = d3.scaleLinear().domain(sdgExtent)
+      const sdgScale = d3.scaleLinear().domain([sdgExtent[0] - 1, sdgExtent[1]])
         .range([0, chartWidth]);
 
-      // y
+      // y scale
       countries = d3.map(data, d => d.country);
       const countryScale = d3.scaleBand().domain(countries).range([0, chartHeight])
         .padding(0.3);
@@ -263,6 +267,13 @@
         .attr("class", "x axis")
         .attr("transform", `translate(${margins.left},${chartHeight + margins.top + 10})`);
 
+      annotations.append("text")
+        .attr("x", chartWidth / 2 + 50)
+        .attr("y", 860)
+        .attr("fill", "black")
+        .style("font-size", "18px")
+        .style("font-family", "Sans-serif")
+        .text("Overall SDG Score (%)");
       bottomAxisG.call(bottomAxis);
 
       // y axis and gridlines
@@ -276,7 +287,7 @@
         .call(leftAxis)
         .append("text")
         .attr("class", "yLabel")
-        .attr("x", -195)
+        .attr("x", -300)
         .attr("y", -100)
         .attr("fill", "black")
         .style("font-size", "18px")
@@ -287,12 +298,13 @@
       let chartArea = svg.append("g").attr("id", "points")
         .attr("transform", `translate(${margins.left},${margins.top})`);
 
+      // Below we are highlighting the United States by making a red rectangle 
       chartArea.selectAll('rect.bar').data(data, d => d['country'])
         .join(enter => enter.append('rect')
           .attr('class', 'bar')
           .attr("fill", d => { return (d.country === 'United States') ? 'red' : 'steelblue' })
           .attr("y", d => countryScale(d.country))
-          .attr("x", d => sdgScale(sdgExtent[0]))
+          .attr("x", d => sdgScale(sdgExtent[0] - 1))
           .attr("width", d => sdgScale(d.overall_score))
           .attr("height", countryScale.bandwidth()));
 
@@ -303,11 +315,13 @@
 
 
     d3.csv("/data/combined_sdg_data_with_continent_scores.csv", d3.autotype).then((data) => {
+
       // third visualization
+      // Defining all the margins and constants for our chart
       let svg = d3.select('svg#vis3');
       const width = svg.attr('width');
       const height = svg.attr('height');
-      const margins = { top: 30, right: 10, bottom: 50, left: 50 };
+      const margins = { top: 30, right: 50, bottom: 100, left: 80 };
       const chartWidth = width - margins.left - margins.right;
       const chartHeight = height - margins.top - margins.bottom;
 
@@ -318,13 +332,53 @@
         .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
 
       const xExtent = d3.extent(data, d => d['year']);
-      const xScale = d3.scaleLog().domain(xExtent).range([0, chartWidth]);
+      console.log(xExtent);
+      const xScale = d3.scaleLinear().domain(xExtent).range([0, chartWidth]);
 
       const yExtent = d3.extent(data, d => d['continent_avg_score']);
       const yScale = d3.scaleLinear().domain(yExtent).range([chartHeight, 0]);
 
       const countryScale = d3.scaleOrdinal(d3.schemeCategory10);
 
+      // This is for our benchmark creation
+
+      //Creating the green rectangle
+      chartArea.append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", chartWidth)
+        .attr("height", yScale(70))
+        .attr("fill", "#8bca84")
+        .attr("opacity", 0.23);
+
+      //Creating the green rectangle
+      chartArea.append("rect")
+        .attr("x", 0)
+        .attr("y", yScale(70))
+        .attr("width", chartWidth)
+        .attr("height", chartHeight - yScale(70))
+        .attr("fill", "#ed2939")
+        .attr("opacity", 0.23);
+
+      //Creating the 70% dotted line
+      chartArea.append("line")
+        .attr("x1", 0)
+        .attr("y1", yScale(70))
+        .attr("x2", chartWidth + 10)
+        .attr("y2", yScale(70))
+        .attr("stroke", "black")
+        .attr("stroke-width", 2)
+        .attr("stroke-dasharray", "5,5");
+
+      chartArea.append("text")
+        .attr("x", chartWidth + 40)
+        .attr("y", yScale(70))
+        .attr("dy", "0.35em")
+        .attr("font-size", "16px")
+        .attr("text-anchor", "end")
+        .text("70%");
+
+      // X axis 
       let bottomAxis = d3.axisBottom(xScale).tickFormat(d3.format("d"));
       let bottomGridlines = d3.axisBottom(xScale)
         .tickSize(-chartHeight - 10)
@@ -336,8 +390,9 @@
         .append("text")
         .attr("class", "xLabel")
         .attr("x", chartWidth / 2 + 10)
-        .attr("y", 30)
+        .attr("y", 45)
         .attr("fill", "black")
+        .style("font-size", "18px")
         .text("Year");
 
       annotations.append("g")
@@ -345,6 +400,7 @@
         .attr("transform", "translate(" + margins.left + "," + (chartHeight + margins.top + 10) + ")")
         .call(bottomGridlines);
 
+      // Y axis
       let leftAxis = d3.axisLeft(yScale)
       let leftGridlines = d3.axisLeft(yScale)
         .tickSize(-chartWidth - 10)
@@ -355,9 +411,10 @@
         .call(leftAxis)
         .append("text")
         .attr("class", "yLabel")
-        .attr("x", -205)
-        .attr("y", -20)
+        .attr("x", -200)
+        .attr("y", -50)
         .attr("fill", "black")
+        .style("font-size", "18px")
         .attr("transform", "rotate(-90)")
         .text("Overall SDG score (%)");
 
@@ -366,10 +423,7 @@
         .attr("transform", "translate(" + (margins.left - 10) + "," + margins.top + ")")
         .call(leftGridlines);
 
-      function jitter() {
-        return (Math.random() * 6) - 3;
-      }
-
+      // Creating the circles for the scatter plot
       let circles = chartArea.selectAll("circle").data(data)
         .join("circle")
         .attr("r", 4)
@@ -378,24 +432,24 @@
         .style("fill", d => countryScale(d['continent']))
         .attr("opacity", 0.6);
 
+
+      // Creating a legend
       let continents = d3.group(data, d => d.continent);
 
       // referenced https://d3-graph-gallery.com/graph/custom_legend.html
       legend.selectAll("dots")
         .data(continents)
-        .enter()
-        .append("circle")
-        .attr("cx", 100)
-        .attr("cy", (d, i) => { return 100 + i * 25 }) // 100 is where the first dot appears. 25 is the distance between dots
+        .join("circle")
+        .attr("cx", 40)
+        .attr("cy", (d, i) => { return 100 + i * 25 })
         .attr("r", 7)
         .style("fill", (d) => { return countryScale(d[0]) });
 
       legend.selectAll("labels")
         .data(continents)
-        .enter()
-        .append("text")
-        .attr("x", 120)
-        .attr("y", (d, i) => { return 100 + i * 25 }) // 100 is where the first dot appears. 25 is the distance between dots
+        .join("text")
+        .attr("x", 60)
+        .attr("y", (d, i) => { return 100 + i * 25 })
         .style("fill", (d) => { return countryScale(d[0]) })
         .text((d) => { return d[0] })
         .attr("text-anchor", "left")
