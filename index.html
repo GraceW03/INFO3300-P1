@@ -2,6 +2,7 @@
 
 <head>
   <script src="https://d3js.org/d3.v7.min.js"></script>
+
   <style>
     .gridlines .domain {
       display: none;
@@ -10,58 +11,102 @@
     .gridlines line {
       stroke: #aaa;
     }
+
+    #title {
+      background-color: palegreen;
+      padding: 10px;
+      text-align: center;
+      font-family: 'Franklin Gothic Medium';
+    }
+
+    #vis {
+      margin-top: 3rem;
+      margin-left: 2rem;
+    }
+
+    /* #vis h3 {
+      padding: 
+    } */
   </style>
 </head>
 
 <body>
-  <!-- for united states each year sgi jndex -->
-  <svg id="vis1" height="500" width="800" style="margin-top:50px"> <!-- change dimensions if needed -->
+  <div id="title">
+    <h1>
+      Sustainable Development: How does it compare around the world and over time?
+    </h1>
+  </div>
 
-  </svg>
+  <div id="vis">
+    <h3>Graph 1: Visualizing Sustainable Development Goals in the United States over Time</h3>
+    <!-- for united states each year sgi jndex -->
+    <svg id="vis1" height="500" width="800" style="float: left"> <!-- change dimensions if needed -->
 
-  <!-- side by side bar graph comparing esch country where x axis is country and y axis is sgi -->
-  <svg id="vis2" height="500" width="800" style="margin-top:50px"> <!-- change dimensions if needed -->
+    </svg>
 
-  </svg>
+    <svg id="legend1" height="500" width="270">
 
+    </svg>
+  </div>
 
-  <!-- comparing regions (continents) and SDG -->
-  <svg id="vis3" height="500" width="800" style="margin-top:50px"> <!-- change dimensions if needed -->
+  <div id="vis">
+    <h3>Graph 2: Visualizing Sustainable Development Scores for Different Countries in 2023 </h3>
+    <!-- side by side bar graph comparing esch country where x axis is country and y axis is sgi -->
+    <svg id="vis2" height="800" width="1000"> <!-- change dimensions if needed -->
 
-  </svg>
+    </svg>
+  </div>
 
-  <svg id="legendSVG" width="500" height="60"></svg>
+  <div id="vis">
+    <h3>Graph 3: Visualizing Sustainable Development Scores for Different Continents over Time </h3>
+    <!-- comparing regions (continents) and SDG -->
+    <svg id="vis3" height="600" width="800"> <!-- change dimensions if needed -->
+
+    </svg>
+
+    <svg id="legend3" height="500" width="450">
+
+    </svg>
+  </div>
 
 
   <script>
 
     d3.csv("/data/combined_sdg_data_with_continent_scores.csv", d3.autoType).then((data) => {
 
+
       console.log(data); // it works!
+
 
       // first visualization
       let svg = d3.select('svg#vis1');
       const width = svg.attr('width');
       const height = svg.attr('height');
-      const margin = { top: 10, right: 110, bottom: 50, left: 50 };
+      const margin = { top: 10, right: 10, bottom: 50, left: 70 };
       const chartWidth = width - margin.left - margin.right;
       const chartHeight = height - margin.top - margin.bottom;
+
+      let legend = d3.select("svg#legend1")
 
       let annotations = svg.append("g").attr("id", "annotations");
       let chartArea = svg.append("g").attr("id", "points")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
+
       data = data.filter((d) => { return d['country_code'] === 'USA'; });
+
 
       let low = 1000;
       let high = -1000;
 
-      // dictionary with the variables we are interested in paying attention to 
-      const scores = ['sdg_index_score', 'goal_1_score', 'goal_2_score', 'goal_3_score', 'goal_4_score', 'goal_5_score'];
 
-      /* iterate through a for each loop so we can find the extent of the y axis. 
-      cannot use a normal .extent function because we have multiple variable that we need to look 
-      at in order to find the extent. 
+      // dictionary with the variables we are interested in paying attention to
+      const scores = ['sdg_index_score', 'goal_1_score', 'goal_2_score', 'goal_3_score', 'goal_4_score', 'goal_5_score'];
+      const scoreDesc = ['Overall SDG Score', "No Poverty Goal Score", "Zero Hunger Goal Score", "Wellbeing Goal Score", "Education Goal Score", "Gender Equality Goal Score"]
+
+      /* iterate through a for each loop so we can find the extent of the y axis.
+      cannot use a normal .extent function because we have multiple variable that we need to look
+      at in order to find the extent.
       */
       data.forEach(d => {
         scores.forEach(score => {
@@ -71,6 +116,8 @@
             low = d[score];
         });
       });
+
+
 
 
       // creating y axis scale and gridlines
@@ -85,18 +132,19 @@
         .call(leftAxis)
         .append("text")
         .attr("class", "yLabel")
-        .attr("x", -205)
-        .attr("y", -20)
+        .attr("x", -195)
+        .attr("y", -30)
         .attr("fill", "black")
         .style("font-size", "18px")
         .attr("transform", "rotate(-90)")
-        .text("Score");;
+        .text("Score (%)");
       annotations.append("g")
         .attr("class", "y gridlines")
         .attr("transform", `translate(${margin.left - 10},${margin.top})`)
         .call(leftGridlines);
 
-      // creating x axis scales and gridllines
+
+      // creating x axis scales and gridlines
       const yearExtent = d3.extent(data, d => d['year']);
       const yearScale = d3.scaleLinear().domain(yearExtent).range([0, chartWidth]);
       let bottomAxis = d3.axisBottom(yearScale).tickFormat(d3.format("d"))
@@ -111,7 +159,7 @@
         .append("text")
         .attr("class", "xLabel")
         .attr("x", chartWidth / 2 + 10)
-        .attr("y", 30)
+        .attr("y", 35)
         .attr("fill", "black")
         .style("font-size", "18px")
         .text("Year");
@@ -120,23 +168,28 @@
         .attr("transform", `translate(${margin.left},${chartHeight + margin.top + 10})`)
         .call(bottomGridlines);
 
+
       // creating color scale so we can color each line a different color
       const scoreScale = d3.scaleOrdinal()
         .domain(['sdg_index_score', 'goal_1_score', 'goal_2_score', 'goal_3_score', 'goal_4_score', 'goal_5_score'])
         .range(d3.schemeCategory10);
 
 
-      /* 
-      iterating through all of the variables we are interested in. Then, 
-      for each variable, we are plotting the points and making their respective 
-      lines. We are also creating labels for each line. 
+
+
+      /*
+      iterating through all of the variables we are interested in. Then,
+      for each variable, we are plotting the points and making their respective
+      lines. We are also creating labels for each line.
       */
-      scores.forEach(score => {
+      scores.forEach((score, i) => {
+
 
         var lineGen = d3.line()
           .x(d => yearScale(d['year']))
           .y(d => yScale(d[score]))
           .curve(d3.curveMonotoneX);
+
 
         chartArea.append("path")
           .datum(data)
@@ -146,6 +199,7 @@
           .attr("stroke-width", 3)
           .attr("d", lineGen);
 
+
         chartArea.selectAll(`circle.${score}`).data(data)
           .join("circle")
           .attr("r", 3)
@@ -153,58 +207,94 @@
           .attr("cx", d => yearScale(d['year']))
           .attr("cy", d => yScale(d[score]));
 
-        // This page taught us how to add labels for each line: https://gist.github.com/d3noob/8603837
-        chartArea.append("text")
-          .attr("transform", `translate(${yearScale(data[data.length - 1]['year']) + 3},${yScale(data[data.length - 1][score])})`)
-          .attr("dy", ".35em")
-          .attr("text-anchor", "start")
+
+        // referenced https://d3-graph-gallery.com/graph/custom_legend.html
+        legend.append("circle")
+          .attr("cx", 50)
+          .attr("cy", 100 + i * 25) // 100 is where the first dot appears. 25 is the distance between dots
+          .attr("r", 7)
+          .style("fill", function (d) { return scoreScale(score) });
+
+        legend.append("text")
+          .attr("x", 70)
+          .attr("y", 100 + i * 25) // 100 is where the first dot appears. 25 is the distance between dots
           .style("fill", scoreScale(score))
-          .text(score);
+          .text(scoreDesc[i])
+          .attr("text-anchor", "left")
+          .style("alignment-baseline", "middle");
       });
 
+
     });
+
 
     d3.csv("/data/sustainable_development_report_2023.csv").then((data) => {
 
       console.log(data);
 
+      data = data.filter((d) => { return d.region === 'OECD' });
+
       // second visualization
       let svg = d3.select('svg#vis2');
       const width = svg.attr('width');
       const height = svg.attr('height');
-      const margins = { top: 30, right: 10, bottom: 50, left: 50 };
+      const margins = { top: 30, right: 10, bottom: 100, left: 150 };
       const chartWidth = width - margins.left - margins.right;
       const chartHeight = height - margins.top - margins.bottom;
 
+      // x
       const sdgExtent = d3.extent(data, d => d['overall_score']);
-      const sdgScale = d3.scaleLog().domain(sdgExtent)
+      const sdgScale = d3.scaleLinear().domain(sdgExtent)
         .range([0, chartWidth]);
 
-      const countries = d3.map(data, d => d.country)
-      const countryScale = d3.scaleBand().domain(countries).range([0, chartWidth])
-        .padding(0.05);
+      // y
+      countries = d3.map(data, d => d.country);
+      const countryScale = d3.scaleBand().domain(countries).range([0, chartHeight])
+        .padding(0.3);
 
-      // Update and animate axes
+
+      let annotations = svg.append("g").attr("id", "annotations");
+
+      // x axis and gridlines
       let bottomAxis = d3.axisBottom();
-      bottomAxis.scale(countryScale);
-      bottomAxisG.transition().call(bottomAxis);
+      bottomAxis.scale(sdgScale);
 
-      let leftAxis = d3.axisLeft(sdgScale);
-      svg2.append("g")
-        .attr("class", "y axis")
-        .attr("transform", `translate(${margins.left - 10}, ${margins.top})`)
-        .call(leftAxis2);
+      let bottomAxisG = svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", `translate(${margins.left},${chartHeight + margins.top + 10})`);
 
-      let leftGridlines = d3.axisLeft(sdgScale)
+      bottomAxisG.call(bottomAxis);
+
+      // y axis and gridlines
+      let leftAxis = d3.axisLeft(countryScale)
+      let leftGridlines = d3.axisLeft(countryScale)
         .tickSize(-chartWidth - 10)
-        .tickFormat('');
-      svg.append('g')
-        .attr('class', 'y gridlines')
-        .attr('transform', `translate(${margins.left - 10},${margins.top})`)
-        .call(leftGridlines);
+        .tickFormat("")
+      annotations.append("g")
+        .attr("class", "y axis")
+        .attr("transform", "translate(" + (margins.left - 10) + "," + margins.top + ")")
+        .call(leftAxis)
+        .append("text")
+        .attr("class", "yLabel")
+        .attr("x", -195)
+        .attr("y", -100)
+        .attr("fill", "black")
+        .style("font-size", "18px")
+        .attr("transform", "rotate(-90)")
+        .text("Country");
 
 
+      let chartArea = svg.append("g").attr("id", "points")
+        .attr("transform", `translate(${margins.left},${margins.top})`);
 
+      chartArea.selectAll('rect.bar').data(data, d => d['country'])
+        .join(enter => enter.append('rect')
+          .attr('class', 'bar')
+          .attr("fill", d => { return (d.country === 'United States') ? 'red' : 'steelblue' })
+          .attr("y", d => countryScale(d.country))
+          .attr("x", d => sdgScale(sdgExtent[0]))
+          .attr("width", d => sdgScale(d.overall_score))
+          .attr("height", countryScale.bandwidth()));
 
 
     });
@@ -221,6 +311,7 @@
       const chartWidth = width - margins.left - margins.right;
       const chartHeight = height - margins.top - margins.bottom;
 
+      let legend = d3.select("svg#legend3");
 
       let annotations = svg.append("g").attr("id", "annotations");
       let chartArea = svg.append("g").attr("id", "points")
@@ -234,7 +325,7 @@
 
       const countryScale = d3.scaleOrdinal(d3.schemeCategory10);
 
-      let bottomAxis = d3.axisBottom(xScale)
+      let bottomAxis = d3.axisBottom(xScale).tickFormat(d3.format("d"));
       let bottomGridlines = d3.axisBottom(xScale)
         .tickSize(-chartHeight - 10)
         .tickFormat("")
@@ -268,7 +359,7 @@
         .attr("y", -20)
         .attr("fill", "black")
         .attr("transform", "rotate(-90)")
-        .text("Overall SDG score");
+        .text("Overall SDG score (%)");
 
       annotations.append("g")
         .attr("class", "y gridlines")
@@ -282,10 +373,34 @@
       let circles = chartArea.selectAll("circle").data(data)
         .join("circle")
         .attr("r", 4)
-        .attr("cx", d => xScale(d['year']) + jitter())
-        .attr("cy", d => yScale(d['continent_avg_score']) + jitter())
+        .attr("cx", d => xScale(d['year']))
+        .attr("cy", d => yScale(d['continent_avg_score']))
         .style("fill", d => countryScale(d['continent']))
         .attr("opacity", 0.6);
+
+      let continents = d3.group(data, d => d.continent);
+
+      // referenced https://d3-graph-gallery.com/graph/custom_legend.html
+      legend.selectAll("dots")
+        .data(continents)
+        .enter()
+        .append("circle")
+        .attr("cx", 100)
+        .attr("cy", (d, i) => { return 100 + i * 25 }) // 100 is where the first dot appears. 25 is the distance between dots
+        .attr("r", 7)
+        .style("fill", (d) => { return countryScale(d[0]) });
+
+      legend.selectAll("labels")
+        .data(continents)
+        .enter()
+        .append("text")
+        .attr("x", 120)
+        .attr("y", (d, i) => { return 100 + i * 25 }) // 100 is where the first dot appears. 25 is the distance between dots
+        .style("fill", (d) => { return countryScale(d[0]) })
+        .text((d) => { return d[0] })
+        .attr("text-anchor", "left")
+        .style("alignment-baseline", "middle");
+
 
     });
 
